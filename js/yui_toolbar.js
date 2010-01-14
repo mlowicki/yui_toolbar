@@ -23,10 +23,10 @@ Array.prototype.contains = function(obj) {
  *  value {MIXED}
  *  type {String}
  */
-YUI_toolbar_row =function(name, value, type, onChange) {
+YToolbarRow =function(name, value, type, onChange) {
     this._name = name;
     this._value = value;
-    if(!(YUI_toolbar.prototype.TYPES.contains(type))) {
+    if(!(YToolbar.prototype.TYPES.contains(type))) {
         throw new Error('Unrecognized type ' + type);
     }
     this._type = type;
@@ -34,7 +34,7 @@ YUI_toolbar_row =function(name, value, type, onChange) {
     this._toolbar = null;
 };
 
-YUI_toolbar_row.prototype = {
+YToolbarRow.prototype = {
     /**
      * Return:
      *  {String}
@@ -66,18 +66,48 @@ YUI_toolbar_row.prototype = {
      *  {Boolean}
      */
     setValue: function(value) {
-        // check value
         if(this._toolbar.set(this.getName(), value)) {
             this._value = value;
             return true;
         }
         return false;
+    },
+    setName: function(name) {
+
+    },
+    getEl: function() {
+
+    },
+    getNameEl: function() {
+
+    },
+    getValueEl: function() {
+
+    },
+    mark: function() {
+
+    },
+    unmark: function() {
+
+    },
+    markName: function() {
+
+    },
+    unmarkName: function() {
+
+    },
+    markValue: function() {
+
+    },
+    unmarkValue: function() {
+
     }
 };
 
-YUI_toolbar = function(parent, rows, cfg) {
+YToolbar = function(parent, rows, cfg) {
     this._parent = parent;
-    this._rows = rows;
+    this._initRows = rows;
+    this._rows = [];
     this._cfg = cfg || {};
     if(this._cfg.sortable === undefined) { // sortable is true by default
         this._cfg.sortable = true;
@@ -85,7 +115,7 @@ YUI_toolbar = function(parent, rows, cfg) {
     this.init();
 };
 
-YUI_toolbar.prototype = {
+YToolbar.prototype = {
     _editorsInit: function() {
         YAHOO.widget.TextboxCellEditor.prototype.LABEL_SAVE = 'ok';
         YAHOO.widget.TextboxCellEditor.prototype.LABEL_CANCEL = 'anuluj';
@@ -127,65 +157,6 @@ YUI_toolbar.prototype = {
                 elCell.innerHTML = oData;
                 break;
          }
-    },
-    getRowEl: function(name) {
-        var row = this.getRow(name);
-        if(row != null) {
-            return YAHOO.util.Dom.get(row.getId());
-        }
-        return null;
-    },
-    markName: function(name) {
-        var rowEl = this.getRowEl(name);
-        if(rowEl != null) {
-            var td = rowEl.getElementsByTagName('td')[0];
-            YAHOO.util.Dom.addClass(td, 'mark');
-        }
-    },
-    unmarkName: function(name) {
-        var rowEl = this.getRowEl(name);
-        if(rowEl != null) {
-            var td = rowEl.getElementsByTagName('td')[0];
-            YAHOO.util.Dom.removeClass(td, 'mark');
-        }
-    },
-    /**
-     * mark property value
-     *
-     * Parameters:
-     *  name {String}
-     */
-    mark: function(name) {
-        var rowEl = this.getRowEl(name);
-        if(rowEl != null) {
-            var td = rowEl.getElementsByTagName('td')[1];
-            YAHOO.util.Dom.addClass(td, 'mark');
-        }
-    },
-    /**
-     * unmark property value
-     *
-     * Parameters:
-     *  name {String}
-     */
-    unmark: function(name) {
-        var rowEl = this.getRowEl(name);
-        if(rowEl != null) {
-            var td = rowEl.getElementsByTagName('td')[1];
-            YAHOO.util.Dom.removeClass(td, 'mark');
-        }
-    },
-    markRow: function(name) {
-        var rowEl = this.getRowEl(name);
-        if(rowEl != null) {
-            YAHOO.util.Dom.addClass(rowEl, 'mark');
-        }
-    },
-    unmarkRow: function(name) {
-        var rowEl = this.getRowEl(name);
-        if(rowEl != null) {
-            YAHOO.util.Dom.removeClass(rowEl, 'mark');
-        }
     },
     /**
      * create YUI datetable
@@ -261,7 +232,7 @@ YUI_toolbar.prototype = {
      *  name {String}
      *
      * Return:
-     *  {YUI_toolbar_row}
+     *  {YToolbarRow}
      */
     get: function(name) {
         for(var i=0; i < this._rows.length; i++) {
@@ -271,77 +242,49 @@ YUI_toolbar.prototype = {
         }
         return null;
     },
-    
-    setValue: function(name, value) {
-        var row = this.get(name);
-        row.setValue(value);
-    },
-    getValue: function(name) {
-        var row = this.get(name);
-        return row.getValue();
-    },
-    /**
-     * 
-     * Parameters:
-     *  name {String}
-     *
-     * Return:
-     *  {YUI_toolbar_row}
-     */
-    getRow: function(name) {
-        var index = this.findRow(name);
-        if(index != null) {
-            return  this._dt.getRecordSet().getRecords()[index];
-        }
-        else {
-            return null;
-        }
-    },
-    findRow: function(name) {
-        var rows = this._dt.getRecordSet().getRecords();
-        for(var i=0; i<rows.length; i++) {
-            if(rows[i].getData().name == name) {
-                return i;
-            }
-        }
-        return null;
-    },
     /**
      * initialize toolbar with given data
      */
     _dataInit: function() {
-        for(var i=0; i < this._rows.length; i++) {
-            this.addRow(this._rows[i]);
+        for(var i=0; i < this._initRows.length; i++) {
+            this.add(this._initRows[i]);
         }
     },
-    addRowAfter: function(item, name) {
-        var index = this.findRow(name);
-        if(index === null) {
-            throw new Error('Row with name ' + name + ' not found');
-        }
-        this.addRow(item, index+1);
+    addAfter: function(row, name) {
+    
+    },
+    addBefore: function(row, name) {
+
     },
     /**
      * Add row to the table
      * 
      * Parameters:
-     *  row {YUI_toolbar_row}
+     *  row {YToolbarRow}
      *  index {Number}
      */
-    addRow: function(row, index) {
-        this._dt.addRow({
-            name: row.getName(), 
-            value: row.getValue(),
-            type: row.getType()
-        }, index);
+    add: function(row, index) { 
         row._toolbar = this;
-    },
-    deleteRow: function(name) {
-        var index = this.findRow(name);
-        if(index === null) {
-            throw new Error('Row with name ' + name + ' not found');
+        if(YAHOO.lang.isNumber(index)) {
+            // TODO
         }
-        this._dt.deleteRow(index);
+        else {
+            this._rows.push(row);
+            this._dt.addRow({
+                name: row.getName(), 
+                value: row.getValue(),
+                type: row.getType()
+            });
+        }
+    },
+    remove: function(name) {
+        var row = this.get(name);
+        row._toolbar = null;
+        for(i=0; i < this._rows.length; i++) {
+            if(this._rows[i] === row) {
+                this._rows.splice(i, 1);
+            }
+        }
     },
     /**
      * destroy toolbar
