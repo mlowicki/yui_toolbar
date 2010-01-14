@@ -16,25 +16,62 @@ Array.prototype.contains = function(obj) {
     return false;
 }
 
-YUI_toolbar_row =function(name, value, type) {
+/**
+ * 
+ * Parameters:
+ *  name {String}
+ *  value {MIXED}
+ *  type {String}
+ */
+YUI_toolbar_row =function(name, value, type, onChange) {
     this._name = name;
     this._value = value;
     if(!(YUI_toolbar.prototype.TYPES.contains(type))) {
         throw new Error('Unrecognized type ' + type);
     }
     this._type = type;
-
+    this._onChange = onChange;
+    this._toolbar = null;
 };
 
 YUI_toolbar_row.prototype = {
+    /**
+     * Return:
+     *  {String}
+     */
     getName: function() {
         return this._name;
     },
+    /**
+     * Return:
+     *  {MIXED}
+     */
     getValue: function() {
         return this._value;
     },
+    /**
+     * Return:
+     *  {String}
+     */
     getType: function() {
         return this._type;
+    },
+    /**
+     * set value and update toolbar
+     *
+     * Parameters:
+     *  value {MIXED}
+     * 
+     * Return:
+     *  {Boolean}
+     */
+    setValue: function(value) {
+        // check value
+        if(this._toolbar.set(this.getName(), value)) {
+            this._value = value;
+            return true;
+        }
+        return false;
     }
 };
 
@@ -112,6 +149,12 @@ YUI_toolbar.prototype = {
             YAHOO.util.Dom.removeClass(td, 'mark');
         }
     },
+    /**
+     * mark property value
+     *
+     * Parameters:
+     *  name {String}
+     */
     mark: function(name) {
         var rowEl = this.getRowEl(name);
         if(rowEl != null) {
@@ -119,6 +162,12 @@ YUI_toolbar.prototype = {
             YAHOO.util.Dom.addClass(td, 'mark');
         }
     },
+    /**
+     * unmark property value
+     *
+     * Parameters:
+     *  name {String}
+     */
     unmark: function(name) {
         var rowEl = this.getRowEl(name);
         if(rowEl != null) {
@@ -138,6 +187,46 @@ YUI_toolbar.prototype = {
             YAHOO.util.Dom.removeClass(rowEl, 'mark');
         }
     },
+    /**
+     * create YUI datetable
+     */
+    _tableInit: function() {
+        this._columnDefs = [
+            {key: 'name', label:'nazwa', sortable: this._cfg.sortable},
+            {key: 'value', label: 'wartość',
+                formatter: this._formatterDispatcher,
+                editor:new YAHOO.widget.BaseCellEditor()}
+        ];
+
+        this._ds  = new YAHOO.util.DataSource([]);
+        this._ds.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+        this._ds.responseSchema = {
+            fields: ['name','value','type']
+        };
+        this._editorsInit();
+        this._dt = new YAHOO.widget.DataTable(this._table, this._columnDefs,
+                                            this._ds);
+        this._dt.subscribe('rowMouseoverEvent', this._dt.onEventHighlightRow);
+        this._dt.subscribe('rowMouseoutEvent', this._dt.onEventUnhighlightRow);
+        var that = this;
+        //Dom.setStyle(this._dt.getTheadEl(), 'display', 'none');
+        this._dt.subscribe('cellClickEvent', function (oArgs) {
+            var target = oArgs.target,
+                record = this.getRecord(target),
+                column = this.getColumn(target),
+                type = record.getData('type');
+            column.editor = that._EDITORS[type];
+            this.showCellEditor(target);
+        });
+        this._dt.subscribe('cellUpdateEvent', function(o) {
+            if(o.record.getData().value !== o.oldData) {
+                console.debug('no change');
+            }
+        });
+    },
+    /**
+     * init DOM nodes
+     */
     _skeletonInit: function() {
         this._root = document.createElement('div');
         this._rootEl = new Element(this._root);
@@ -147,35 +236,6 @@ YUI_toolbar.prototype = {
         this._table = document.createElement('div');
         this._tableEl = new Element(this._table);
         this._tableEl.appendTo(this._rootEl);
-		
-		this._columnDefs = [
-			{key: 'name', label:'nazwa', sortable: this._cfg.sortable},
-			{key: 'value', label: 'wartość', 
-                formatter: this._formatterDispatcher,
-                editor:new YAHOO.widget.BaseCellEditor()}
-		];
-
-		this._ds  = new YAHOO.util.DataSource([]);
-		this._ds.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
-		this._ds.responseSchema = {
-			fields: ['name','value','type']
-		};
-        this._editorsInit();
-		this._dt = new YAHOO.widget.DataTable(this._table, this._columnDefs,
-                                            this._ds);
-        this._rowsInit();
-        this._dt.subscribe('rowMouseoverEvent', this._dt.onEventHighlightRow); 
-        this._dt.subscribe('rowMouseoutEvent', this._dt.onEventUnhighlightRow); 
-        var that = this;
-        //Dom.setStyle(this._dt.getTheadEl(), 'display', 'none');
-        this._dt.subscribe('cellClickEvent', function (oArgs) {
-            var target = oArgs.target,
-                record = this.getRecord(target),
-                column = this.getColumn(target),
-                type = record.getData('type');
-			column.editor = that._EDITORS[type];
-			this.showCellEditor(target);
-		});
     },
     /**
      * set value for a given property
@@ -195,23 +255,43 @@ YUI_toolbar.prototype = {
         return true;
     },
     /**
-     * get value for a given property
+     * get row for a given property
      *
      * Parameters:
      *  name {String}
      *
      * Return:
-     *  {MIXED}
+     *  {YUI_toolbar_row}
      */
     get: function(name) {
-        var row = this.getRow(name);
-        if(row === null) return;
-        return row.getData().value; 
+        for(var i=0; i < this._rows.length; i++) {
+            if(this._rows[i].getName() === name) {
+                return this._rows[i];
+            }
+        }
+        return null;
     },
+    
+    setValue: function(name, value) {
+        var row = this.get(name);
+        row.setValue(value);
+    },
+    getValue: function(name) {
+        var row = this.get(name);
+        return row.getValue();
+    },
+    /**
+     * 
+     * Parameters:
+     *  name {String}
+     *
+     * Return:
+     *  {YUI_toolbar_row}
+     */
     getRow: function(name) {
         var index = this.findRow(name);
         if(index != null) {
-            return this._dt.getRecordSet().getRecords()[index];
+            return  this._dt.getRecordSet().getRecords()[index];
         }
         else {
             return null;
@@ -226,8 +306,11 @@ YUI_toolbar.prototype = {
         }
         return null;
     },
-    _rowsInit: function() {
-        for(var i=0; i<this._rows.length; i++) {
+    /**
+     * initialize toolbar with given data
+     */
+    _dataInit: function() {
+        for(var i=0; i < this._rows.length; i++) {
             this.addRow(this._rows[i]);
         }
     },
@@ -238,12 +321,20 @@ YUI_toolbar.prototype = {
         }
         this.addRow(item, index+1);
     },
-    addRow: function(item, index) {
+    /**
+     * Add row to the table
+     * 
+     * Parameters:
+     *  row {YUI_toolbar_row}
+     *  index {Number}
+     */
+    addRow: function(row, index) {
         this._dt.addRow({
-            name: item.getName(), 
-            value: item.getValue(),
-            type: item.getType()
+            name: row.getName(), 
+            value: row.getValue(),
+            type: row.getType()
         }, index);
+        row._toolbar = this;
     },
     deleteRow: function(name) {
         var index = this.findRow(name);
@@ -260,5 +351,7 @@ YUI_toolbar.prototype = {
     },
     init: function() {
         this._skeletonInit();
+        this._tableInit();
+        this._dataInit();
     }
 };
