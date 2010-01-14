@@ -1,23 +1,40 @@
 var YToolbarRowTC = new YAHOO.tool.TestCase({
         name: 'YToolbarRow class tests',
         setUp: function () {
-            /*
-            this.r1 = new YUI_toolbar_row('szerokość', 100, 'Number');
-            this.r2 = new YUI_toolbar_row('wysokość', 200, 'Number');
-            this.r3 = new YUI_toolbar_row('jednostka', 'px', 'PxPt');
-            this.r4 = new YUI_toolbar_row('format', 'jpg', 'ImageFormat');
-            this.r5 = new YUI_toolbar_row('rozmiar (kb)', 241, 'Number');
-            this.r6 = new YUI_toolbar_row('skalowanie', 'tak', 'YesNo');
-
-            this.toolbar = new YUI_toolbar(YAHOO.util.Dom.get('toolbar_cnt'), [
-                this.r1, this.r2, this.r3, this.r4, this.r5, this.r6
+            this.Assert = YAHOO.util.Assert;
+            this.Dom = YAHOO.util.Dom;
+        },
+        tearDown : function () {},
+        testCallbacks: function() {
+            this.f = function(newValue, oldValue) {
+                this.newValue = newValue;
+                this.oldValue = oldValue;
+            };
+            this.r1 = new YToolbarRow('width', 100, 'Number');
+            this.r2 = new YToolbarRow('height', 200, 'Number', {
+                fn: this.f, scope: this
+            });
+            this.toolbar = new YToolbar(this.Dom.get('toolbar_cnt'), [
+                this.r1, this.r2
             ]);
-            this.assert = YAHOO.util.Assert;
-            */
-        },
-        tearDown : function () {
-            //this.toolbar.destroy();
-        },
+        
+            this.toolbar.get('height').set(300);        
+            this.Assert.areEqual(this.oldValue, 200);
+            this.Assert.areEqual(this.newValue, 300);
+
+            this.toolbar.get('height').onChange({
+                fn: function(newValue, oldValue) {
+                    this.newValue2 = newValue;
+                    this.oldValue2 = oldValue;
+                },
+                scope: this
+            });
+            
+            this.toolbar.get('height').set(600);
+            this.Assert.areEqual(this.oldValue2, 300);
+            this.Assert.areEqual(this.newValue2, 600);
+            this.toolbar.destroy();
+        }
         /*
         testSetGetValue : function () {
             this.assert.areEqual(this.toolbar.get('wysokość').getValue(), 200);
