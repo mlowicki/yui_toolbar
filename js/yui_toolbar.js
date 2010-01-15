@@ -81,31 +81,52 @@ YToolbarRow.prototype = {
 
     },
     getEl: function() {
-
+        var row = this._toolbar._getTableRow(this.getName());
+        return  YAHOO.util.Dom.get(row.getId());
     },
     getNameEl: function() {
-
+        var row = this._toolbar._getTableRow(this.getName());
+        return  YAHOO.util.Dom.get(row.getId()).getElementsByTagName('td')[0];
     },
     getValueEl: function() {
-
+        var row = this._toolbar._getTableRow(this.getName());
+        return  YAHOO.util.Dom.get(row.getId()).getElementsByTagName('td')[1];
     },
+    /**
+     * Mark row element (add 'mark' class to the tr element)
+     */
     mark: function() {
-
+        YAHOO.util.Dom.addClass(this.getEl(), 'mark');
     },
+    /**
+     * Unmark row element (remove 'mark' class from the tr element)
+     */
     unmark: function() {
-
+        YAHOO.util.Dom.removeClass(this.getEl(), 'mark');
     },
+    /**
+     * Mark name element (add 'mark' class to the td element)
+     */
     markName: function() {
-
+        YAHOO.util.Dom.addClass(this.getNameEl(), 'mark');
     },
+    /**
+     * Unmark name element (remove 'mark' class from the td element)
+     */
     unmarkName: function() {
-
+        YAHOO.util.Dom.removeClass(this.getNameEl(), 'mark');
     },
+    /**
+     * Mark value element (add 'mark' class to the td element)
+     */
     markValue: function() {
-
+        YAHOO.util.Dom.addClass(this.getValueEl(), 'mark');
     },
+    /**
+     * Unmark value element (remove 'mark' class from the td element)
+     */
     unmarkValue: function() {
-
+        YAHOO.util.Dom.removeClass(this.getValueEl(), 'mark');
     }
 };
 

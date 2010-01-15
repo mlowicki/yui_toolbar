@@ -1,0 +1,40 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title></title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" type="text/css" href="js/libs/yui/build/datatable/assets/skins/sam/datatable.css" />
+    <script type="text/javascript" src="js/libs/yui/build/yuiloader/yuiloader-min.js"></script>
+    <script type="text/javascript" src="js/libs/yui/build/dom/dom-min.js"></script>
+    <script type="text/javascript" src="js/libs/yui/build/event/event-min.js"></script>
+    <script type="text/javascript" src="js/libs/yui/build/element/element-min.js"></script>
+    <script type="text/javascript" src="js/libs/yui/build/datasource/datasource-min.js"></script>
+    <script type="text/javascript" src="js/libs/yui/build/datatable/datatable-min.js"></script>
+    <script type="text/javascript" src="js/yui_toolbar.js"></script>
+    <script type="text/javascript">
+        YAHOO.util.Event.onDOMReady(function (){
+            try{
+            var r1 = new YToolbarRow('width', 100, 'Number');
+            var r2 = new YToolbarRow('height', 200, 'Number');
+            toolbar = new YToolbar(YAHOO.util.Dom.get('toolbar_cnt'), [
+                r1, r2
+            ]); 
+            } catch(e) { console.debug(e) }    
+        });
+    </script>
+    <style type="text/css">
+        .yui-skin-sam .yui-dt tr.mark {
+            background-color: #a33;
+            color: #fff;
+        }
+        .yui-skin-sam .yui-dt td.mark {
+            background-color: #f00;
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="yui-skin-sam">
+    <div id="toolbar_cnt"></div>
+</body>
+</html>
+          
