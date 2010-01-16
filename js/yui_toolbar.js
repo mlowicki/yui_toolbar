@@ -139,6 +139,8 @@ YToolbar = function(parent, rows, cfg) {
     this._initRows = rows;
     this._rows = [];
     this._cfg = cfg || {};
+    this._nameLabel = this._cfg.nameLabel || 'name';
+    this._valueLabel = this._cfg.valueLabel || 'value';
     if(this._cfg.sortable === undefined) { // sortable is true by default
         this._cfg.sortable = true;
     }
@@ -193,8 +195,8 @@ YToolbar.prototype = {
      */
     _tableInit: function() {
         this._columnDefs = [
-            {key: 'name', label:'nazwa', sortable: this._cfg.sortable},
-            {key: 'value', label: 'wartość',
+            {key: 'name', label: this._nameLabel, sortable: this._cfg.sortable, },
+            {key: 'value', label: this._valueLabel,
                 formatter: this._formatterDispatcher,
                 editor:new YAHOO.widget.BaseCellEditor()}
         ];
@@ -211,14 +213,18 @@ YToolbar.prototype = {
         this._dt.subscribe('rowMouseoutEvent', this._dt.onEventUnhighlightRow);
         var that = this;
         //Dom.setStyle(this._dt.getTheadEl(), 'display', 'none');
+        
         this._dt.subscribe('cellClickEvent', function (oArgs) {
             var target = oArgs.target,
                 record = this.getRecord(target),
                 column = this.getColumn(target),
                 type = record.getData('type');
-            column.editor = that._EDITORS[type];
-            this.showCellEditor(target);
+            if(column.field != 'name') {
+                column.editor = that._EDITORS[type];
+                this.showCellEditor(target);
+            }
         });
+        
         this._dt.subscribe('cellUpdateEvent', function(o) {
             if(o.record.getData().value !== o.oldData) {
                 console.debug('no change');
