@@ -10,14 +10,17 @@
     <script type="text/javascript" src="js/libs/yui/build/element/element-min.js"></script>
     <script type="text/javascript" src="js/libs/yui/build/datasource/datasource-min.js"></script>
     <script type="text/javascript" src="js/libs/yui/build/datatable/datatable-min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/yui_toolbar.css" />
     <script type="text/javascript" src="js/yui_toolbar.js"></script>
     <script type="text/javascript">
         YAHOO.util.Event.onDOMReady(function (){
             try{
-            var r1 = new YToolbarRow('width', 100, 'Number');
-            var r2 = new YToolbarRow('height', 200, 'Number');
+            var r1 = new YToolbarRow('width', 100, 'Number', null, {value: 'Click for edit', name: 'Photo width'});
+            var r2 = new YToolbarRow('height', 200, 'Number', null, {value: 'Click for edit', name: 'Photo height'});
+            var r3 = new YToolbarRow('unit', 'px', 'PxPt', null, {value: 'Click for edit', name: 'Unit dimensions'});
+            var r4 = new YToolbarRow('format', 'png', 'ImageFormat', null, {value: 'Click for edit', name: 'Photo format'});
             toolbar = new YToolbar(YAHOO.util.Dom.get('toolbar_cnt'), [
-                r1, r2
+                r1, r2, r3, r4
             ]); 
             } catch(e) { console.debug(e) }    
         });

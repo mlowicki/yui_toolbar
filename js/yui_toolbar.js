@@ -1,6 +1,7 @@
 /**
  * TODO
  * - add tooltips to the rows/values/names
+ * - missing tooltips after reordering table
  */
 var Dom = YAHOO.util.Dom,
     Event = YAHOO.util.Dom,
@@ -22,8 +23,9 @@ Array.prototype.contains = function(obj) {
  *  name {String}
  *  value {MIXED}
  *  type {String}
+ *  onChange {Object}
  */
-YToolbarRow =function(name, value, type, onChange) {
+YToolbarRow =function(name, value, type, onChange, tooltips) {
     this._name = name;
     this._value = value;
     if(!(YToolbar.prototype.TYPES.contains(type))) {
@@ -32,9 +34,17 @@ YToolbarRow =function(name, value, type, onChange) {
     this._type = type;
     this._onChange = onChange;
     this._toolbar = null;
+    this._tooltips = tooltips || {};
 };
 
 YToolbarRow.prototype = {
+    _setToolbar: function(toolbar) {
+        this._toolbar = toolbar;
+        if(toolbar) {
+            this.getValueEl().setAttribute('title', this._tooltips.value);
+            this.getNameEl().setAttribute('title', this._tooltips.name);
+        }
+    },
     /**
      * Return:
      *  {String}
@@ -74,20 +84,38 @@ YToolbarRow.prototype = {
         }
         return false;
     },
+    /**
+     * set onchange callback
+     *
+     * Parameters:
+     *  o {Object}
+     */
     onChange: function(o) {
         this._onChange = o;
     },
-    setName: function(name) {
-
-    },
+    /**
+     *
+     * Return:
+     *  {HtmlElement}
+     */
     getEl: function() {
         var row = this._toolbar._getTableRow(this.getName());
         return  YAHOO.util.Dom.get(row.getId());
     },
+    /**
+     *
+     * Return:
+     *   {HtmlElement}
+     */
     getNameEl: function() {
         var row = this._toolbar._getTableRow(this.getName());
         return  YAHOO.util.Dom.get(row.getId()).getElementsByTagName('td')[0];
     },
+    /**
+     *
+     * Return:
+     *   {HtmlElement}
+     */
     getValueEl: function() {
         var row = this._toolbar._getTableRow(this.getName());
         return  YAHOO.util.Dom.get(row.getId()).getElementsByTagName('td')[1];
@@ -318,7 +346,6 @@ YToolbar.prototype = {
      *  index {Number}
      */
     add: function(row, index) { 
-        row._toolbar = this;
         if(YAHOO.lang.isNumber(index)) {
             // TODO
         }
@@ -329,11 +356,12 @@ YToolbar.prototype = {
                 value: row.getValue(),
                 type: row.getType()
             });
+            row._setToolbar(this);
         }
     },
     remove: function(name) {
         var row = this.get(name);
-        row._toolbar = null;
+        row._setToolbar(null);
         for(i=0; i < this._rows.length; i++) {
             if(this._rows[i] === row) {
                 this._rows.splice(i, 1);
