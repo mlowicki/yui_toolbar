@@ -14,15 +14,21 @@
     <script type="text/javascript" src="js/yui_toolbar.js"></script>
     <script type="text/javascript">
         YAHOO.util.Event.onDOMReady(function (){
-            try{
-            var r1 = new YToolbarRow('width', 100, 'Number', null, {name: 'Photo width'});
-            var r2 = new YToolbarRow('height', 200, 'Number', null, {name: 'Photo height'});
-            var r3 = new YToolbarRow('unit', 'px', 'PxPt', null, {name: 'Unit dimensions'});
-            var r4 = new YToolbarRow('format', 'png', 'ImageFormat', null, {value: 'Click for edit', name: 'Photo format'});
+            YToolbarRow.prototype.MSG_VALUE = 'kliknij aby edytować';
+            YToolbar.prototype.LABEL_CANCEL = 'anuluj';
+            YToolbar.prototype.MSG_SORTASC = 'sortuj rosnąco po nazwach';
+            YToolbar.prototype.MSG_SORTDESC = 'sortuj malejąco po nazwach';
+            YToolbar.prototype.YES = 'tak';
+            YToolbar.prototype.NO = 'nie';
+            var r1 = new YToolbarRow('szerokość', 100, 'Number', null, {name: 'szerokość zdjęcia'});
+            var r2 = new YToolbarRow('wysokość', 200, 'Number', null, {name: 'wysokość zdjęcia'});
+            var r3 = new YToolbarRow('jednostka', 'px', 'PxPt', null, {name: 'jednostka wymiarów'});
+            var r4 = new YToolbarRow('format', 'png', 'ImageFormat', null, {name: 'format zdjęcia'});
+            var r5 = new YToolbarRow('rozmiar (kb)', '30', 'Number', null, {name: 'rozmiar zdjęcia (ilość zajmowanego miejsca na dysku)'});
+            var r6 = new YToolbarRow('skaluj', 'tak', 'YesNo', null, {name: 'Zachowuj proporcje zdjęcia podczas zmiany wymiarów'});
             toolbar = new YToolbar(YAHOO.util.Dom.get('toolbar_cnt'), [
-                r1, r2, r3, r4
-            ]); 
-            } catch(e) { console.debug(e) }    
+                r1, r2, r3, r4, r5, r6
+            ], {labelName: 'nazwa', labeValue: 'wartość'}); 
         });
     </script>
     <style type="text/css">

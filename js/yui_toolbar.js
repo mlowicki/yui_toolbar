@@ -38,11 +38,15 @@ YToolbarRow =function(name, value, type, onChange, tooltips) {
 };
 
 YToolbarRow.prototype = {
+    MSG_VALUE: 'Click for edit',
     _setToolbar: function(toolbar) {
         this._toolbar = toolbar;
         if(toolbar) {
-            this.getValueEl().setAttribute('title', this._tooltips.value);
-            this.getNameEl().setAttribute('title', this._tooltips.name);
+            this.getValueEl().setAttribute('title',
+                                this._tooltips.value || this.MSG_VALUE);
+            if(this._tooltips.name) {
+                this.getNameEl().setAttribute('title', this._tooltips.name);
+            }
         }
     },
     /**
@@ -167,18 +171,28 @@ YToolbar = function(parent, rows, cfg) {
     this._initRows = rows;
     this._rows = [];
     this._cfg = cfg || {};
-    this._nameLabel = this._cfg.nameLabel || 'name';
-    this._valueLabel = this._cfg.valueLabel || 'value';
+    this._nameLabel = this._cfg.labelName || this.LABEL_NAME;
+    this._valueLabel = this._cfg.labeValue || this.LABEL_VALUE;
     if(this._cfg.sortable === undefined) { // sortable is true by default
         this._cfg.sortable = true;
     }
     this.init();
 };
 
+
 YToolbar.prototype = {
+    LABEL_SAVE: 'ok',
+    LABEL_CANCEL: 'cancel',
+    LABEL_NAME: 'name',
+    LABEL_VALUE: 'value',
+    MSG_SORTASC: 'Click to sort ascending',
+    MSG_SORTDESC: 'Click to sort descending',
+    YES: 'yes',
+    NO: 'no',
     _editorsInit: function() {
-        YAHOO.widget.TextboxCellEditor.prototype.LABEL_SAVE = 'ok';
-        YAHOO.widget.TextboxCellEditor.prototype.LABEL_CANCEL = 'anuluj';
+        YAHOO.widget.TextboxCellEditor.prototype.LABEL_SAVE = this.LABEL_SAVE;
+        YAHOO.widget.TextboxCellEditor.prototype.LABEL_CANCEL = 
+                                                            this.LABEL_CANCEL;
         this._EDITORS = {
             Text: new YAHOO.widget.TextboxCellEditor(),
             Number: new YAHOO.widget.TextboxCellEditor(
@@ -191,7 +205,7 @@ YToolbar.prototype = {
             PxPt: new YAHOO.widget.RadioCellEditor({
                 radioOptions: ['px', 'pt'], disableBtns: true}),
             YesNo: new YAHOO.widget.RadioCellEditor({
-                radioOptions: ['tak', 'nie'],disableBtns: true})
+                radioOptions: [this.YES, this.NO],disableBtns: true})
         };
     },
     TYPES: ['Number', 'Text', 'ImageFormat', 'YesNo', 'PxPt'],
@@ -237,6 +251,8 @@ YToolbar.prototype = {
         this._editorsInit();
         this._dt = new YAHOO.widget.DataTable(this._table, this._columnDefs,
                                             this._ds);
+        this._dt.set('MSG_SORTASC', this.MSG_SORTASC);
+        this._dt.set('MSG_SORTDESC', this.MSG_SORTDESC);
         this._dt.subscribe('rowMouseoverEvent', this._dt.onEventHighlightRow);
         this._dt.subscribe('rowMouseoutEvent', this._dt.onEventUnhighlightRow);
         var that = this;
@@ -254,7 +270,7 @@ YToolbar.prototype = {
         });
         
         this._dt.subscribe('cellUpdateEvent', function(o) {
-            if(o.record.getData().value !== o.oldData) {
+            if(o.record.getData().value === o.oldData) {
                 console.debug('no change');
             }
         });
