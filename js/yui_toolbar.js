@@ -257,7 +257,13 @@ YToolbar.prototype = {
         this._dt.subscribe('rowMouseoutEvent', this._dt.onEventUnhighlightRow);
         var that = this;
         //Dom.setStyle(this._dt.getTheadEl(), 'display', 'none');
-        
+        this._dt.subscribe('columnSortEvent', function() {
+            // hack for save titles after sorting
+            var rows = that.getAll();
+            for(var i=0; i < rows.length; i++) {
+                rows[i]._setToolbar(that);
+            }
+        }); 
         this._dt.subscribe('cellClickEvent', function (oArgs) {
             var target = oArgs.target,
                 record = this.getRecord(target),
@@ -339,6 +345,9 @@ YToolbar.prototype = {
             }
         }
         return null;
+    },
+    getAll: function() {
+        return this._rows;
     },
     /**
      * initialize toolbar with given data
