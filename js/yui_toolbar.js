@@ -28,26 +28,20 @@ Array.prototype.contains = function(obj) {
 YToolbarRow =function(name, value, type, onChange, tooltips) {
     this._name = name;
     this._value = value;
+    this._tooltips = tooltips || {};
+    this._valueTitle = this._tooltips.value || this.MSG_VALUE;
+    this._nameTitle = this._tooltips.name;
     if(!(YToolbar.prototype.TYPES.contains(type))) {
         throw new Error('Unrecognized type ' + type);
     }
     this._type = type;
     this._onChange = onChange;
-    this._toolbar = null;
-    this._tooltips = tooltips || {};
 };
 
 YToolbarRow.prototype = {
     MSG_VALUE: 'Click for edit',
     _setToolbar: function(toolbar) {
         this._toolbar = toolbar;
-        if(toolbar) {
-            this.getValueEl().setAttribute('title',
-                                this._tooltips.value || this.MSG_VALUE);
-            if(this._tooltips.name) {
-                this.getNameEl().setAttribute('title', this._tooltips.name);
-            }
-        }
     },
     /**
      * Return:
@@ -62,6 +56,12 @@ YToolbarRow.prototype = {
      */
     getValue: function() {
         return this._value;
+    },
+    getValueTitle: function() {
+        return this._valueTitle;
+    },
+    getNameTitle: function() {
+        return this._nameTitle;
     },
     /**
      * Return:
@@ -257,13 +257,17 @@ YToolbar.prototype = {
         this._dt.subscribe('rowMouseoutEvent', this._dt.onEventUnhighlightRow);
         var that = this;
         //Dom.setStyle(this._dt.getTheadEl(), 'display', 'none');
-        this._dt.subscribe('columnSortEvent', function() {
-            // hack for save titles after sorting
-            var rows = that.getAll();
-            for(var i=0; i < rows.length; i++) {
-                rows[i]._setToolbar(that);
+        this._dt.subscribe('cellMouseoverEvent', function(oArgs) {
+            var record = this.getRecord(oArgs.target);
+                column = this.getColumn(oArgs.target);
+
+            var td = Dom.get(record.getId()).getElementsByTagName('td')[
+                                            (column.key == 'value') ? 1 : 0];
+            if(!td.hasAttribute('title')) {
+                var title = record.getData()[column.key + 'Title'];
+                if(title) td.setAttribute('title', title);
             }
-        }); 
+        });
         this._dt.subscribe('cellClickEvent', function (oArgs) {
             var target = oArgs.target,
                 record = this.getRecord(target),
@@ -379,7 +383,9 @@ YToolbar.prototype = {
             this._dt.addRow({
                 name: row.getName(), 
                 value: row.getValue(),
-                type: row.getType()
+                type: row.getType(),
+                valueTitle: row.getValueTitle(),
+                nameTitle: row.getNameTitle()
             });
             row._setToolbar(this);
         }
