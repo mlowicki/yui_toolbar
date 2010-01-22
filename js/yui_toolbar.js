@@ -211,6 +211,9 @@ YToolbar.prototype = {
     TYPES: ['Number', 'Text', 'ImageFormat', 'YesNo', 'PxPt'],
     _formatterDispatcher: function(elCell, oRecord, oColumn, oData) {
         var type = oRecord.getData('type');
+        if(oColumn.key == 'name') {
+            type = 'Text';
+        }
         oColumn.editorOptions = type.editorOptions;
         switch (type) {
             case 'Number':
@@ -231,13 +234,19 @@ YToolbar.prototype = {
                 elCell.innerHTML = oData;
                 break;
          }
+         // assign title to the td element
+         if(!elCell.hasAttribute('title')) {
+            var title = oRecord.getData()[oColumn.key + 'Title'];
+            if(title) elCell.setAttribute('title', title);
+         }
     },
     /**
      * create YUI datetable
      */
     _tableInit: function() {
         this._columnDefs = [
-            {key: 'name', label: this._nameLabel, sortable: this._cfg.sortable, },
+            {key: 'name', label: this._nameLabel, sortable: this._cfg.sortable,
+                formatter: this._formatterDispatcher},
             {key: 'value', label: this._valueLabel,
                 formatter: this._formatterDispatcher,
                 editor:new YAHOO.widget.BaseCellEditor()}
@@ -257,17 +266,6 @@ YToolbar.prototype = {
         this._dt.subscribe('rowMouseoutEvent', this._dt.onEventUnhighlightRow);
         var that = this;
         //Dom.setStyle(this._dt.getTheadEl(), 'display', 'none');
-        this._dt.subscribe('cellMouseoverEvent', function(oArgs) {
-            var record = this.getRecord(oArgs.target);
-                column = this.getColumn(oArgs.target);
-
-            var td = Dom.get(record.getId()).getElementsByTagName('td')[
-                                            (column.key == 'value') ? 1 : 0];
-            if(!td.hasAttribute('title')) {
-                var title = record.getData()[column.key + 'Title'];
-                if(title) td.setAttribute('title', title);
-            }
-        });
         this._dt.subscribe('cellClickEvent', function (oArgs) {
             var target = oArgs.target,
                 record = this.getRecord(target),
