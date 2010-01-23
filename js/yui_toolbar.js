@@ -28,26 +28,20 @@ Array.prototype.contains = function(obj) {
 YToolbarRow =function(name, value, type, onChange, tooltips) {
     this._name = name;
     this._value = value;
+    this._tooltips = tooltips || {};
+    this._valueTitle = this._tooltips.value || this.MSG_VALUE;
+    this._nameTitle = this._tooltips.name;
     if(!(YToolbar.prototype.TYPES.contains(type))) {
         throw new Error('Unrecognized type ' + type);
     }
     this._type = type;
     this._onChange = onChange;
-    this._toolbar = null;
-    this._tooltips = tooltips || {};
 };
 
 YToolbarRow.prototype = {
     MSG_VALUE: 'Click for edit',
     _setToolbar: function(toolbar) {
         this._toolbar = toolbar;
-        if(toolbar) {
-            this.getValueEl().setAttribute('title',
-                                this._tooltips.value || this.MSG_VALUE);
-            if(this._tooltips.name) {
-                this.getNameEl().setAttribute('title', this._tooltips.name);
-            }
-        }
     },
     /**
      * Return:
@@ -62,6 +56,12 @@ YToolbarRow.prototype = {
      */
     getValue: function() {
         return this._value;
+    },
+    getValueTitle: function() {
+        return this._valueTitle;
+    },
+    getNameTitle: function() {
+        return this._nameTitle;
     },
     /**
      * Return:
@@ -211,6 +211,9 @@ YToolbar.prototype = {
     TYPES: ['Number', 'Text', 'ImageFormat', 'YesNo', 'PxPt'],
     _formatterDispatcher: function(elCell, oRecord, oColumn, oData) {
         var type = oRecord.getData('type');
+        if(oColumn.key == 'name') {
+            type = 'Text';
+        }
         oColumn.editorOptions = type.editorOptions;
         switch (type) {
             case 'Number':
@@ -231,13 +234,19 @@ YToolbar.prototype = {
                 elCell.innerHTML = oData;
                 break;
          }
+         // assign title to the td element
+         if(!elCell.hasAttribute('title')) {
+            var title = oRecord.getData()[oColumn.key + 'Title'];
+            if(title) elCell.setAttribute('title', title);
+         }
     },
     /**
      * create YUI datetable
      */
     _tableInit: function() {
         this._columnDefs = [
-            {key: 'name', label: this._nameLabel, sortable: this._cfg.sortable, },
+            {key: 'name', label: this._nameLabel, sortable: this._cfg.sortable,
+                formatter: this._formatterDispatcher},
             {key: 'value', label: this._valueLabel,
                 formatter: this._formatterDispatcher,
                 editor:new YAHOO.widget.BaseCellEditor()}
@@ -257,7 +266,6 @@ YToolbar.prototype = {
         this._dt.subscribe('rowMouseoutEvent', this._dt.onEventUnhighlightRow);
         var that = this;
         //Dom.setStyle(this._dt.getTheadEl(), 'display', 'none');
-        
         this._dt.subscribe('cellClickEvent', function (oArgs) {
             var target = oArgs.target,
                 record = this.getRecord(target),
@@ -340,6 +348,9 @@ YToolbar.prototype = {
         }
         return null;
     },
+    getAll: function() {
+        return this._rows;
+    },
     /**
      * initialize toolbar with given data
      */
@@ -370,7 +381,9 @@ YToolbar.prototype = {
             this._dt.addRow({
                 name: row.getName(), 
                 value: row.getValue(),
-                type: row.getType()
+                type: row.getType(),
+                valueTitle: row.getValueTitle(),
+                nameTitle: row.getNameTitle()
             });
             row._setToolbar(this);
         }
