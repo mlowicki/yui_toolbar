@@ -29,7 +29,8 @@ YToolbarRow =function(name, value, type, onChange, tooltips, cfg) {
     this._name = name;
     this._value = value;
     this._tooltips = tooltips || {};
-    this._valueTitle = this._tooltips.value || this.MSG_VALUE;
+    this._valueTitle = (YAHOO.lang.isString(this._tooltips.value)) ?
+                                    this._tooltips.value : this.MSG_VALUE;
     this._nameTitle = this._tooltips.name;
      
     if(cfg && cfg.hasOwnProperty('editable')) {
