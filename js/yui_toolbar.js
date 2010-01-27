@@ -25,12 +25,19 @@ Array.prototype.contains = function(obj) {
  *  type {String}
  *  onChange {Object}
  */
-YToolbarRow =function(name, value, type, onChange, tooltips) {
+YToolbarRow =function(name, value, type, onChange, tooltips, cfg) {
     this._name = name;
     this._value = value;
     this._tooltips = tooltips || {};
     this._valueTitle = this._tooltips.value || this.MSG_VALUE;
     this._nameTitle = this._tooltips.name;
+     
+    if(cfg && cfg.hasOwnProperty('editable')) {
+        this._editable = !!cfg.editable;
+    }
+    else {
+        this._editable = true;
+    }
     if(!(YToolbar.prototype.TYPES.contains(type))) {
         throw new Error('Unrecognized type ' + type);
     }
@@ -42,6 +49,9 @@ YToolbarRow.prototype = {
     MSG_VALUE: 'Click for edit',
     _setToolbar: function(toolbar) {
         this._toolbar = toolbar;
+    },
+    isEditable: function() {
+        return this._editable;
     },
     /**
      * Return:
@@ -214,6 +224,11 @@ YToolbar.prototype = {
         if(oColumn.key == 'name') {
             type = 'Text';
         }
+        else {
+            if(oRecord.getData()[oColumn.key + 'Editable'] === false) {
+                YAHOO.util.Dom.addClass(elCell, 'non-editable');
+            }
+        }
         oColumn.editorOptions = type.editorOptions;
         switch (type) {
             case 'Number':
@@ -233,12 +248,12 @@ YToolbar.prototype = {
             case 'PxPt':
                 elCell.innerHTML = oData;
                 break;
-         }
-         // assign title to the td element
-         if(!elCell.hasAttribute('title')) {
+        }
+        // assign title to the td element
+        if(!elCell.hasAttribute('title')) {
             var title = oRecord.getData()[oColumn.key + 'Title'];
             if(title) elCell.setAttribute('title', title);
-         }
+        }
     },
     /**
      * create YUI datetable
@@ -270,8 +285,9 @@ YToolbar.prototype = {
             var target = oArgs.target,
                 record = this.getRecord(target),
                 column = this.getColumn(target),
-                type = record.getData('type');
-            if(column.field != 'name') {
+                type = record.getData('type'),
+                row = that.get(record.getData('name'));
+            if(column.field != 'name' && row.isEditable()) {
                 column.editor = that._EDITORS[type];
                 this.showCellEditor(target);
             }
@@ -383,7 +399,8 @@ YToolbar.prototype = {
                 value: row.getValue(),
                 type: row.getType(),
                 valueTitle: row.getValueTitle(),
-                nameTitle: row.getNameTitle()
+                nameTitle: row.getNameTitle(),
+                valueEditable: row.isEditable()
             });
             row._setToolbar(this);
         }

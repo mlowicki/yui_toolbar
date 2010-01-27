@@ -1,3 +1,7 @@
 div.yui-dt td.yui-dt-first {
     cursor: help !important;
 }
+
+.non-editable {
+    cursor: text !important;
+}
