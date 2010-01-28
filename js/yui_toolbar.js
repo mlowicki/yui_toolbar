@@ -300,6 +300,12 @@ YToolbar.prototype = {
             }
         });
     },
+    getContainerEl: function() {
+        return this._dt.getContainerEl();
+    },
+    getWidth: function() {
+        return Dom.getStyle(this._dt.getTableEl(), 'width');
+    },
     /**
      * init DOM nodes
      */
