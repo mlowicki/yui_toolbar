@@ -99,6 +99,11 @@ YToolbarRow.prototype = {
         }
         return false;
     },
+    changeValue: function(value) {
+	var old = this._value;
+        this._value = value;
+        this._onChange.fn.call(this._onChange.scope, value, old);
+    },
     /**
      * set onchange callback
      *
@@ -295,8 +300,8 @@ YToolbar.prototype = {
         });
         
         this._dt.subscribe('cellUpdateEvent', function(o) {
-            if(o.record.getData().value === o.oldData) {
-                console.debug('no change');
+            if(o.record.getData().value !== o.oldData) {
+		that.get(o.record.getData('name')).change(o.record.getData().value);
             }
         });
     },
