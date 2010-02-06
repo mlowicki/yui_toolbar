@@ -108,10 +108,12 @@ YToolbarRow.prototype = {
      *  {Boolean}
      */
     setValue: function(value) {
-        if(this._toolbar._setTableRow(this.getName(), value)) {
+        if(this._toolbar._setTableRow(this.getName(), this.getLabel(), value)) {
             var old = this._value;
             this._value = value;
-            this._onChange.fn.call(this._onChange.scope, value, old);
+            if(this._onChange) {
+                this._onChange.fn.call(this._onChange.scope, value, old);
+            }
             return true;
         }
         return false;
@@ -318,7 +320,8 @@ YToolbar.prototype = {
         
         this._dt.subscribe('cellUpdateEvent', function(o) {
             if(o.record.getData().value !== o.oldData) {
-		that.get(o.record.getData('name')).change(o.record.getData().value);
+		        that.get(o.record.getData('name')).changeValue(
+                    o.record.getData().value);
             }
         });
     },
@@ -363,17 +366,19 @@ YToolbar.prototype = {
      * set value for a given property
      *
      * Parameters:
-     *  name {Boolean}
+     *  name {String}
+     *  label {String}
      *  value {MIXED}
      *
      * Return:
      *  {Boolean}
      */
-    _setTableRow: function(name, value) {
+    _setTableRow: function(name, label, value) {
         var row = this._getTableRow(name);
         if(row === null) return false;
         this._dt.updateRow(row,
-                {name: name, value: value, type: row.getData()['type']});
+                {label: label, name: name, value: value,
+                    type: row.getData()['type']});
         return true;
     },
     /**
