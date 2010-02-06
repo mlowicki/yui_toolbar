@@ -20,12 +20,21 @@
             YToolbar.prototype.MSG_SORTDESC = 'sortuj malejąco po nazwach';
             YToolbar.prototype.YES = 'tak';
             YToolbar.prototype.NO = 'nie';
-            var r1 = new YToolbarRow('szerokość', 100, 'Number', null, {name: 'szerokość zdjęcia'});
-            var r2 = new YToolbarRow('wysokość', 200, 'Number', null, {name: 'wysokość zdjęcia'});
-            var r3 = new YToolbarRow('jednostka', 'px', 'PxPt', null, {name: 'jednostka wymiarów'});
-            var r4 = new YToolbarRow('format', 'png', 'ImageFormat', null, {name: 'format zdjęcia'});
-            var r5 = new YToolbarRow('rozmiar (kb)', '30', 'Number', null, {name: 'rozmiar zdjęcia (ilość zajmowanego miejsca na dysku)', value: ''}, {editable: false});
-            var r6 = new YToolbarRow('skaluj', 'tak', 'YesNo', null, {name: 'zachowuj proporcje zdjęcia podczas zmiany wymiarów'});
+            var r1 = new YToolbarRow({name: 'width', label: 'szerokość'},
+                100, 'Number', null, {name: 'szerokość zdjęcia'});
+            var r2 = new YToolbarRow({name: 'height', label: 'wysokość'},
+                200, 'Number', null, {name: 'wysokość zdjęcia'});
+            var r3 = new YToolbarRow({name: 'unit', label: 'jednostka'},
+                'px', 'PxPt', null, {name: 'jednostka wymiarów'});
+            var r4 = new YToolbarRow('format', 'png', 'ImageFormat', null,
+                {name: 'format zdjęcia'});
+            var r5 = new YToolbarRow({name: 'size', label: 'rozmiar (kb)'},
+                30, 'Number', null,
+                {name: 'rozmiar zdjęcia (ilość zajmowanego miejsca na dysku)',
+                    value: ''}, {editable: false});
+            var r6 = new YToolbarRow({name: 'ratio', label: 'skaluj'}, 'tak',
+                'YesNo', null,
+                {name: 'zachowuj proporcje zdjęcia podczas zmiany wymiarów'});
             toolbar = new YToolbar(YAHOO.util.Dom.get('toolbar_cnt'), [
                 r1, r2, r3, r4, r5, r6
             ], {labelName: 'nazwa', labeValue: 'wartość'}); 

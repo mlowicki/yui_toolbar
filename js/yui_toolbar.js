@@ -20,18 +20,29 @@ Array.prototype.contains = function(obj) {
 /**
  * 
  * Parameters:
- *  name {String}
+ *  name {String|Object} 
  *  value {MIXED}
  *  type {String}
  *  onChange {Object}
  */
 YToolbarRow =function(name, value, type, onChange, tooltips, cfg) {
-    this._name = name;
+    if(YAHOO.lang.isObject(name)) {
+        this._name = name.name;
+        this._label = name.label;
+    }
+    else {
+        if(YAHOO.lang.isString(name)) {
+            this._name = name;
+        }
+        else {
+            throw new Error('First parameter should be a string or an object');
+        }
+    }
     this._value = value;
     this._tooltips = tooltips || {};
     this._valueTitle = (YAHOO.lang.isString(this._tooltips.value)) ?
                                     this._tooltips.value : this.MSG_VALUE;
-    this._nameTitle = this._tooltips.name;
+    this._labelTitle = this._tooltips.name;
      
     if(cfg && cfg.hasOwnProperty('editable')) {
         this._editable = !!cfg.editable;
@@ -62,6 +73,12 @@ YToolbarRow.prototype = {
         return this._name;
     },
     /**
+     * Return row label or name if label is not available
+     */
+    getLabel: function() {
+        return (this._label) ? this._label : this._name;
+    },
+    /**
      * Return:
      *  {MIXED}
      */
@@ -71,8 +88,8 @@ YToolbarRow.prototype = {
     getValueTitle: function() {
         return this._valueTitle;
     },
-    getNameTitle: function() {
-        return this._nameTitle;
+    getLabelTitle: function() {
+        return this._labelTitle;
     },
     /**
      * Return:
@@ -227,7 +244,7 @@ YToolbar.prototype = {
     TYPES: ['Number', 'Text', 'ImageFormat', 'YesNo', 'PxPt'],
     _formatterDispatcher: function(elCell, oRecord, oColumn, oData) {
         var type = oRecord.getData('type');
-        if(oColumn.key == 'name') {
+        if(oColumn.key == 'label') {
             type = 'Text';
         }
         else {
@@ -266,7 +283,7 @@ YToolbar.prototype = {
      */
     _tableInit: function() {
         this._columnDefs = [
-            {key: 'name', label: this._nameLabel, sortable: this._cfg.sortable,
+            {key: 'label', label: this._nameLabel, sortable: this._cfg.sortable,
                 formatter: this._formatterDispatcher},
             {key: 'value', label: this._valueLabel,
                 formatter: this._formatterDispatcher,
@@ -276,7 +293,7 @@ YToolbar.prototype = {
         this._ds  = new YAHOO.util.DataSource([]);
         this._ds.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
         this._ds.responseSchema = {
-            fields: ['name','value','type']
+            fields: ['name', 'label','value','type']
         };
         this._editorsInit();
         this._dt = new YAHOO.widget.DataTable(this._table, this._columnDefs,
@@ -293,7 +310,7 @@ YToolbar.prototype = {
                 column = this.getColumn(target),
                 type = record.getData('type'),
                 row = that.get(record.getData('name'));
-            if(column.field != 'name' && row.isEditable()) {
+            if(column.field != 'label' && row.isEditable()) {
                 column.editor = that._EDITORS[type];
                 this.showCellEditor(target);
             }
@@ -407,11 +424,12 @@ YToolbar.prototype = {
         else {
             this._rows.push(row);
             this._dt.addRow({
-                name: row.getName(), 
+                label: row.getLabel(),
+                name: row.getName(),
                 value: row.getValue(),
                 type: row.getType(),
                 valueTitle: row.getValueTitle(),
-                nameTitle: row.getNameTitle(),
+                labelTitle: row.getLabelTitle(),
                 valueEditable: row.isEditable()
             });
             row._setToolbar(this);
