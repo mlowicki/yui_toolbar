@@ -25,7 +25,7 @@ Array.prototype.contains = function(obj) {
  *  type {String}
  *  onChange {Object}
  */
-YToolbarRow =function(name, value, type, onChange, tooltips, cfg) {
+YToolbarRow =function(name, value, type, onChange, tooltips, cfg, onClick) {
     if(YAHOO.lang.isObject(name)) {
         this._name = name.name;
         this._label = name.label;
@@ -55,12 +55,16 @@ YToolbarRow =function(name, value, type, onChange, tooltips, cfg) {
     }
     this._type = type;
     this._onChange = onChange;
+    this._onClick = onClick;
 };
 
 YToolbarRow.prototype = {
     MSG_VALUE: 'Click for edit',
     _setToolbar: function(toolbar) {
         this._toolbar = toolbar;
+    },
+    isClickable: function() {
+        return !!this._onClick;
     },
     isEditable: function() {
         return this._editable;
@@ -122,6 +126,11 @@ YToolbarRow.prototype = {
 	var old = this._value;
         this._value = value;
         this._onChange.fn.call(this._onChange.scope, value, old);
+    },
+    click: function() {
+        if(this.isClickable()) {
+	    this._onClick.fn.call(this._onClick.scope);	
+	}
     },
     /**
      * set onchange callback
@@ -250,7 +259,8 @@ YToolbar.prototype = {
             type = 'Text';
         }
         else {
-            if(oRecord.getData()[oColumn.key + 'Editable'] === false) {
+	    var data = oRecord.getData();
+            if(data[oColumn.key + 'Editable'] === false && !data[oColumn.key + 'Clickable']) {
                 YAHOO.util.Dom.addClass(elCell, 'non-editable');
             }
         }
@@ -316,6 +326,9 @@ YToolbar.prototype = {
                 column.editor = that._EDITORS[type];
                 this.showCellEditor(target);
             }
+	    else if(row.isClickable()) {
+		row.click();
+	    }
         });
         
         this._dt.subscribe('cellUpdateEvent', function(o) {
@@ -435,7 +448,8 @@ YToolbar.prototype = {
                 type: row.getType(),
                 valueTitle: row.getValueTitle(),
                 labelTitle: row.getLabelTitle(),
-                valueEditable: row.isEditable()
+                valueEditable: row.isEditable(),
+		valueClickable: row.isClickable()
             });
             row._setToolbar(this);
         }
