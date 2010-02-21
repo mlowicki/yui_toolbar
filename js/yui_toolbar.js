@@ -107,23 +107,25 @@ YToolbarRow.prototype = {
      *
      * Parameters:
      *  value {MIXED}
-     * 
+     *  silent {Boolean}
+     *
      * Return:
      *  {Boolean}
      */
-    setValue: function(value) {
+    setValue: function(value, silent) {
         if(this._toolbar._setTableRow(this.getName(), this.getLabel(), value)) {
             var old = this._value;
             this._value = value;
-            if(this._onChange) {
-                this._onChange.fn.call(this._onChange.scope, value, old);
+            if(!silent && this._onChange) {
+                this._onChange.fn.call(this._onChange.scope, value, old,
+                                        silent);
             }
             return true;
         }
         return false;
     },
     changeValue: function(value) {
-	var old = this._value;
+        var old = this._value;
         this._value = value;
         this._onChange.fn.call(this._onChange.scope, value, old);
     },
